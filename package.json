@@ -19,6 +19,7 @@
     "build:helper": "node native/hook-helper/run.mjs build",
     "test:helper": "node native/hook-helper/run.mjs test",
     "dist": "npm run build:helper && electron-vite build && electron-builder --win --publish never",
+    "background:mac": "node tools/mac/background.mjs",
     "install:mac": "npm run dist:mac && node tools/mac/install.mjs",
     "dist:mac": "npm run build:helper && electron-vite build && electron-builder --mac --arm64 --publish never",
     "dev:site": "vite --config site/vite.config.ts",

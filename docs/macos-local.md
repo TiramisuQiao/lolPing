@@ -55,6 +55,28 @@ codesign --verify --deep --strict release/mac-arm64/lolPing.app
 - TypeScript：44 个测试文件通过，713 项通过；1 项 Windows 专用文件重命名测试在 Mac 上跳过。
 - 安装到 `~/Applications/lolPing.app` 后，应用签名与主程序、输入辅助程序的 ARM64 架构校验通过。
 - 对安装后的应用运行界面测试：Mac 设置页加载、信号与表情预览及贴图加载通过；Web Audio 上下文处于 running 状态；没有渲染器异常或缺失资源；真实 GitHub 更新检查返回暂无更新。
-- 辅助功能状态为 `noAccess`：尚未验证用户授权后的全局 Option 拖动，也未通过人工听音确认扬声器输出。双显示器、全屏应用和跨设备房间不在本次实机验证范围内。
+- 首次界面测试时辅助功能状态为 `noAccess`；用户授权后，原生输入辅助程序已成功启动并持续运行。尚未完成全局 Option 拖动的端到端测试，也未通过人工听音确认扬声器输出。双显示器、全屏应用和跨设备房间不在本次实机验证范围内。
 
 本地截图和界面测试结果保存在 `release/local-verification/`（不提交个人运行产物）。
+
+
+## 持续后台运行与退出排查
+
+安装后运行：
+
+```bash
+npm run background:mac
+npm run background:mac -- status
+```
+
+这会添加用户级 LaunchAgent `com.tiramisuqiao.lolping.background`：登录时启动、脱离终端或开发会话运行，异常退出后自动重启（启动间隔至少 15 秒）。重复执行启用命令不会重启正在运行的应用。从菜单栏正常选择“退出”仍会停止应用；需要重新启动时再次运行启用命令。关闭设置窗口不影响后台运行。启用服务后，后续通过安装脚本更新也会继续由该服务启动。
+
+后台服务已负责登录启动，无需再开启应用内的“登录时打开”，以免重复启动。日志位于 `~/Library/Logs/lolPing/background.log` 和 `background-error.log`。停用服务：
+
+```bash
+npm run background:mac -- disable
+```
+
+本次排查未发现 lolPing 的 macOS 崩溃报告；系统日志记录的一次 voluntary 退出与测试中的主动重启吻合。早期调试实例由开发执行会话直接启动，也会受到会话中断影响。正常启动的应用与已获授权的输入辅助程序连续运行超过 7 分钟；后台管理现改用独立的 LaunchAgent，后续退出可结合该服务状态和日志排查。
+
+后台服务实测：普通 SIGTERM 被应用作为正常退出处理，服务保持停止；再次启用可恢复。用 SIGKILL 模拟异常退出后，LaunchAgent 自动拉起新进程，已授权的输入辅助程序同步恢复，连续观察 90 秒无再次退出。重复启用服务不会打断已运行的进程。验证记录保存在本地 `release/local-verification/background.json`。

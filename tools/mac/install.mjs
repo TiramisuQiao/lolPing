@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Install the locally built bundle without sudo; preserve any previous install.
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, renameSync, rmSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -50,4 +50,11 @@ try {
 console.log(`Installed: ${target}`);
 if (backup) console.log(`Previous app preserved: ${backup}`);
 console.log('Allow lolPing in System Settings → Privacy & Security → Accessibility, then hold Option and drag.');
-if (!args.includes('--no-open')) execFileSync('/usr/bin/open', [target], { stdio: 'inherit' });
+if (!args.includes('--no-open')) {
+  const service = `gui/${process.getuid()}/com.tiramisuqiao.lolping.background`;
+  if (spawnSync('/bin/launchctl', ['print', service], { stdio: 'ignore' }).status === 0) {
+    execFileSync('/bin/launchctl', ['kickstart', service], { stdio: 'inherit' });
+  } else {
+    execFileSync('/usr/bin/open', [target], { stdio: 'inherit' });
+  }
+}
