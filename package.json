@@ -1,14 +1,14 @@
 {
   "name": "lolping",
   "productName": "lolPing",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "private": true,
   "description": "League of Legends style ping wheel for your Windows and macOS desktop",
   "author": "Danrui Meng (https://github.com/darrenprx)",
   "license": "MIT",
-  "homepage": "https://github.com/darrenprx/lolPing#readme",
-  "repository": { "type": "git", "url": "https://github.com/darrenprx/lolPing.git" },
-  "bugs": "https://github.com/darrenprx/lolPing/issues",
+  "homepage": "https://github.com/TiramisuQiao/lolPing#readme",
+  "repository": { "type": "git", "url": "https://github.com/TiramisuQiao/lolPing.git" },
+  "bugs": "https://github.com/TiramisuQiao/lolPing/issues",
   "main": "out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",
@@ -19,6 +19,7 @@
     "build:helper": "node native/hook-helper/run.mjs build",
     "test:helper": "node native/hook-helper/run.mjs test",
     "dist": "npm run build:helper && electron-vite build && electron-builder --win --publish never",
+    "install:mac": "npm run dist:mac && node tools/mac/install.mjs",
     "dist:mac": "npm run build:helper && electron-vite build && electron-builder --mac --arm64 --publish never",
     "dev:site": "vite --config site/vite.config.ts",
     "build:site": "vite build --config site/vite.config.ts",
@@ -46,7 +47,7 @@
     "ws": "8.22.0"
   },
   "build": {
-    "appId": "com.lolping.app",
+    "appId": "com.tiramisuqiao.lolping",
     "productName": "lolPing",
     "directories": { "output": "release", "buildResources": "build" },
     "files": ["out/**/*", "package.json"],
@@ -66,6 +67,7 @@
       "target": [{ "target": "dmg", "arch": ["arm64"] }],
       "icon": "build/icon.png",
       "category": "public.app-category.utilities",
+      "minimumSystemVersion": "13.0",
       "identity": "-",
       "hardenedRuntime": false,
       "extraResources": [
@@ -79,6 +81,6 @@
       }
     },
     "dmg": { "artifactName": "lolPing-${version}-arm64.dmg" },
-    "publish": [{ "provider": "github", "owner": "darrenprx", "repo": "lolPing" }]
+    "publish": [{ "provider": "github", "owner": "TiramisuQiao", "repo": "lolPing" }]
   }
 }

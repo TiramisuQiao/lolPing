@@ -164,6 +164,20 @@ describe('MacBackend.check', () => {
     }
   });
 
+  it('treats a fork without a public release as up to date', async () => {
+    const { backend } = make({ fetch: serve(new Response('Not Found', { status: 404 })) });
+    await expect(backend.check()).resolves.toBeNull();
+  });
+
+  it('clears a previously found download if the release disappears', async () => {
+    let latest: Response | undefined;
+    const { backend } = make({ fetch: ((input, init) => serve(latest ?? release())(input, init)) as typeof fetch });
+    const info = await backend.check();
+    latest = new Response('Not Found', { status: 404 });
+    await expect(backend.check()).resolves.toBeNull();
+    await expect(backend.download(info!, () => undefined, noAbort())).rejects.toThrow('No download');
+  });
+
   it('a rate limit or error status is a failed check that says the status', async () => {
     for (const status of [403, 429, 500]) {
       const { backend } = make({ fetch: serve(new Response('{"message":"API rate limit exceeded"}', { status })) });

@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { isNewer, isVersion } from '../shared/update';
 import { DamagedDownloadError, type UpdateBackend, type UpdateInfo } from './updater';
 
-export const RELEASES_API = 'https://api.github.com/repos/darrenprx/lolPing';
+export { RELEASES_API } from './project';
 const API_TIMEOUT_MS = 15_000;
 
 export interface MacBackendDeps {
@@ -69,6 +69,7 @@ export class MacBackend implements UpdateBackend {
 
   async check(): Promise<UpdateInfo | null> {
     const release = await this.fetchRelease();
+    if (release === undefined) return this.noUpdate(); // a new fork may not have published a release yet
     // Anything unexpected (a captive portal's page, a rate-limit message, a changed API) is a failed check, never an update.
     if (!isObj(release)) throw new Error('GitHub sent an unexpected answer');
     const { tag_name: tag, html_url: htmlUrl, assets } = release;
@@ -197,6 +198,10 @@ export class MacBackend implements UpdateBackend {
         headers: { ...this.headers, Accept: 'application/vnd.github+json' },
         signal: abort.signal,
       });
+      if (res.status === 404) {
+        void res.body?.cancel().catch(noop);
+        return undefined; // GitHub returns 404 when no public release exists
+      }
       if (!res.ok) {
         void res.body?.cancel().catch(noop);
         throw new Error(`GitHub answered ${res.status}`);

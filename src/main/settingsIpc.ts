@@ -11,7 +11,7 @@ import type { UpdateState } from '../shared/update';
 import { emoteFileFrom, type EmoteLibrary } from './emoteLibrary';
 import type { SettingsStore } from './settingsStore';
 
-const PROJECT_URL = 'https://github.com/darrenprx/lolPing';
+import { PROJECT_URL } from './project';
 /** Where "What's new" goes when no update is known. */
 export const LATEST_RELEASE_URL = `${PROJECT_URL}/releases/latest`;
 
